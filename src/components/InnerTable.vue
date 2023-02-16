@@ -1,9 +1,5 @@
 <template>
-  <a-table
-    :columns="innerColumns"
-    :data-source="innerData"
-    :pagination="false"
-  >
+  <a-table :columns="innerColumns" :data-source="data" :pagination="false">
     <template #bodyCell="{ column }">
       <template v-if="column.key === 'state'">
         <span>
@@ -35,9 +31,43 @@
 
 <script setup>
 import { DownOutlined } from "@ant-design/icons-vue";
-// import { ref,defineProps } from "vue";
+import { ref, defineExpose, defineProps, watch } from "vue";
 import { innerColumns, innerData } from "../config.js";
 
+const data = ref([]);
+
+const props = defineProps({
+  expanded: Boolean,
+});
+watch(
+  () => props.expanded,
+  (val) => {
+    if (val) {
+      add();
+    }
+  }
+);
+const isFirst = ref(true);
+const fetchData = () => {
+  console.log(1);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      isFirst.value = false;
+      resolve(innerData);
+    });
+  });
+};
+
+const add = async () => {
+  if (isFirst.value) {
+    data.value = await fetchData();
+  }
+  data.value.push({});
+};
+
+defineExpose({
+  add,
+});
 </script>
 
 <style scoped></style>

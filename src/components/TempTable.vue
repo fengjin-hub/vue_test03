@@ -3,8 +3,9 @@
     :columns="columns"
     :data-source="data"
     class="components-table-demo-nested"
-    :expandedRowKeys="expandedRowKeys"
-
+    v-model:expandedRowKeys="expandedRowKeys"
+    rowKey="name"
+    @expand="expand"
   >
     <template #bodyCell="{ column }">
       <template v-if="column.key === 'operation'">
@@ -12,17 +13,28 @@
       </template>
     </template>
     <template #expandedRowRender>
-      <InnerTable  />
+      <InnerTable :expanded="expanded" ref="innerTable" />
     </template>
   </a-table>
 </template>
 <script setup>
-import { ref } from "vue";
+import { ref, nextTick } from "vue";
 import { data, columns } from "../config.js";
 import InnerTable from "./InnerTable.vue";
 
-const expandedRowKeys = ref();
+const innerTable = ref(null);
+const expandedRowKeys = ref([]);
 const zhankai = () => {
-  expandedRowKeys.value='Screem 1';
+  expandedRowKeys.value = ["Screem 1"];
+  nextTick(() => {
+    innerTable.value?.add();
+  });
+};
+
+const expanded = ref(false);
+const expand = async (expand) => {
+  setTimeout(() => {
+    expanded.value = expand;
+  });
 };
 </script>
