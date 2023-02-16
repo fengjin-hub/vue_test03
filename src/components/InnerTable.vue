@@ -31,20 +31,21 @@ import { innerColumns, innerData } from "../config.js";
 const data = ref([]);
 const isAdd = ref(false);
 const isFirstly = ref(true);
+const editableData = reactive({});
 onMounted(async () => {
   data.value = await fetchData();
   isAdd.value && onAdd();
 });
 const editCheck = computed(() => (key) => editableData[key]);
-const fetchData = () => {
-  return new Promise((resolve) => {
+const fetchData = () =>
+  new Promise((resolve) => {
     setTimeout(() => {
       isFirstly.value = false;
       resolve([...innerData]);
     });
   });
-};
-const onAdd = async () => {
+
+const onAdd = () => {
   isAdd.value = true;
   if (!isFirstly.value) {
     const key = Date.now().toString();
@@ -54,13 +55,11 @@ const onAdd = async () => {
     onEdit(key);
   }
 };
-const editableData = reactive({});
 const onEdit = (key) => {
   editableData[key] = {
     ...data.value.filter((item) => key === item.key).at(0),
   };
 };
-
 const onSave = (key) => {
   Object.assign(
     data.value.filter((item) => key === item.key)[0],
