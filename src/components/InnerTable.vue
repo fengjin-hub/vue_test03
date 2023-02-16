@@ -1,28 +1,23 @@
 <template>
   <a-table :columns="innerColumns" :data-source="data" :pagination="false">
-    <template #bodyCell="{ column }">
-      <template v-if="column.key === 'state'">
-        <span>
-          <a-badge status="success" />
-          Finished
-        </span>
+    <template #bodyCell="{ column: { dataIndex }, text, record: { key } }">
+      <template v-if="['date', 'name', 'upgradeNum'].includes(dataIndex)">
+        <a-input
+          v-if="editCheck(key)"
+          v-model:value="editCheck(key)[dataIndex]"
+          style="margin: -5px 0"
+        />
+        <template v-else>
+          {{ text }}
+        </template>
       </template>
-      <template v-else-if="column.key === 'operation'">
+      <template v-else-if="dataIndex === 'operation'">
         <span class="table-operation">
-          <a>Pause</a>
-          <a>Stop</a>
-          <a-dropdown>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item>Action 1</a-menu-item>
-                <a-menu-item>Action 2</a-menu-item>
-              </a-menu>
-            </template>
-            <a>
-              More
-              <down-outlined />
-            </a>
-          </a-dropdown>
+          <a v-if="editCheck(key)" @click="onSave(key)">保存</a>
+          &nbsp;
+          <a v-else @click="onEdit(key)">编辑</a>
+          &nbsp;
+          <a @click="onAdd">新增</a>
         </span>
       </template>
     </template>
@@ -30,44 +25,51 @@
 </template>
 
 <script setup>
-import { DownOutlined } from "@ant-design/icons-vue";
-import { ref, defineExpose, defineProps, watch } from "vue";
+import { ref, reactive, computed, defineExpose, onMounted } from "vue";
 import { innerColumns, innerData } from "../config.js";
 
 const data = ref([]);
-
-const props = defineProps({
-  expanded: Boolean,
+const isAdd = ref(false);
+const isFirstly = ref(true);
+onMounted(async () => {
+  data.value = await fetchData();
+  isAdd.value && onAdd();
 });
-watch(
-  () => props.expanded,
-  (val) => {
-    if (val) {
-      add();
-    }
-  }
-);
-const isFirst = ref(true);
+const editCheck = computed(() => (key) => editableData[key]);
 const fetchData = () => {
-  console.log(1);
   return new Promise((resolve) => {
     setTimeout(() => {
-      isFirst.value = false;
-      resolve(innerData);
+      isFirstly.value = false;
+      resolve([...innerData]);
     });
   });
 };
-
-const add = async () => {
-  if (isFirst.value) {
-    data.value = await fetchData();
+const onAdd = async () => {
+  isAdd.value = true;
+  if (!isFirstly.value) {
+    const key = Date.now().toString();
+    data.value.push({
+      key,
+    });
+    onEdit(key);
   }
-  data.value.push({});
+};
+const editableData = reactive({});
+const onEdit = (key) => {
+  editableData[key] = {
+    ...data.value.filter((item) => key === item.key).at(0),
+  };
+};
+
+const onSave = (key) => {
+  Object.assign(
+    data.value.filter((item) => key === item.key)[0],
+    editableData[key]
+  );
+  delete editableData[key];
 };
 
 defineExpose({
-  add,
+  onAdd,
 });
 </script>
-
-<style scoped></style>

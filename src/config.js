@@ -59,10 +59,6 @@ export const innerColumns = [
     key: "name",
   },
   {
-    title: "Status",
-    key: "state",
-  },
-  {
     title: "Upgrade Status",
     dataIndex: "upgradeNum",
     key: "upgradeNum",
@@ -76,7 +72,7 @@ export const innerColumns = [
 export const innerData = [];
 for (let i = 0; i < 3; ++i) {
   innerData.push({
-    key: i,
+    key: String(i),
     date: "2014-12-24 23:12:00",
     name: `This is production name ${i + 1}`,
     upgradeNum: "Upgraded: 56",
