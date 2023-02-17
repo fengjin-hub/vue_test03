@@ -5,36 +5,27 @@
     class="components-table-demo-nested"
     v-model:expandedRowKeys="expandedRowKeys"
     rowKey="name"
-    @expand="expand"
   >
-    <template #bodyCell="{ column }">
+    <template #bodyCell="{ column, record }">
       <template v-if="column.key === 'operation'">
-        <a-button @click="zhankai">新增</a-button>
+        <a-button @click="onExpand(record)">新增</a-button>
       </template>
     </template>
-    <template #expandedRowRender>
-      <InnerTable :expanded="expanded" ref="innerTable" />
+    <template #expandedRowRender="{ record }">
+      <InnerTable :ref="record.name" />
     </template>
   </a-table>
 </template>
 <script setup>
-import { ref, nextTick } from "vue";
+import { ref, nextTick, getCurrentInstance } from "vue";
 import { data, columns } from "../config.js";
 import InnerTable from "./InnerTable.vue";
 
-const innerTable = ref(null);
 const expandedRowKeys = ref([]);
-const zhankai = () => {
-  expandedRowKeys.value = ["Screem 1"];
-  nextTick(() => {
-    innerTable.value?.add();
-  });
-};
-
-const expanded = ref(false);
-const expand = async (expand) => {
-  setTimeout(() => {
-    expanded.value = expand;
-  });
+const instance = getCurrentInstance();
+const onExpand = async ({ name }) => {
+  expandedRowKeys.value.push(name);
+  await nextTick;
+  instance.refs[name]?.onAdd();
 };
 </script>
